@@ -1,0 +1,27 @@
+package slogo.turtle;
+
+import slogo.Context;
+import slogo.turtle.TurtleField.DrawingPanel;
+
+/**
+ * @author Kevin Havermann
+ *
+ */
+public class BackgroundContext implements Context{
+
+	DrawingPanel background;
+	/**
+	 * creates a background context
+	 */
+	public BackgroundContext(DrawingPanel background) {
+		
+		this.background = background;
+	}
+
+	@Override
+	public Object value(String name) {
+		return this.background;
+	}
+	
+
+}

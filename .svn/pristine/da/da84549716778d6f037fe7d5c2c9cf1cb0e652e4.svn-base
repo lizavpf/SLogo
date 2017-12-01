@@ -1,0 +1,29 @@
+to triangle
+[
+  repeat 3
+  [
+    fd 50 
+    rt 120
+  ]
+]
+
+side = 50
+to square
+[
+  repeat 4
+  [
+    fd side 
+    rt 90
+  ]
+  fd side
+]
+
+
+to circle
+[
+  repeat 360
+  [
+    fd 1 
+    rt 1
+  ]
+]

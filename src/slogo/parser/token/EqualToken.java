@@ -1,0 +1,6 @@
+package slogo.parser.token;
+
+public class EqualToken extends ReservedToken {
+	public EqualToken() {
+		super("EQUAL?");	}
+}

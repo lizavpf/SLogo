@@ -1,0 +1,50 @@
+package slogo.parser;
+
+import java.util.*;
+import java.io.*;
+import java.net.URL;
+
+/**
+ * Reads the file of instruction names.
+ * 
+ * @author Owen Astrachan
+ * 
+ */
+public class InstructionNames {
+
+	private static List<String> instructions = new ArrayList<String>();
+	private static String PROPFILE = "slogo/parser/instructions.prop";
+
+	static {
+		initialize();
+	}
+
+	/**
+	 * initialize the class by reading the instructions from a property file
+	 */
+	private static void initialize() {
+		Properties statements = new Properties();
+		InstructionNames temp = new InstructionNames();
+		try {
+			URL url = temp.getClass().getClassLoader().getResource(PROPFILE);
+			statements.load(url.openStream());
+			Enumeration<?> e = statements.propertyNames();
+
+			while (e.hasMoreElements()) {
+				String name = (String) e.nextElement();
+				instructions.add(name);
+			}
+		} catch (IOException e) {
+			System.err.println("trouble loading " + PROPFILE);
+		}
+	}
+
+	/**
+	 * 
+	 * @return an iterator of the instruction names
+	 */
+	public static Iterator<String> getNames() {
+		return instructions.iterator();
+	}
+
+}

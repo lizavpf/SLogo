@@ -1,0 +1,35 @@
+/**
+ * 
+ */
+package slogo.parser;
+
+import slogo.GrammarElement;
+import slogo.SLogoInterpreter;
+import slogo.expression.ArithmeticBase;
+import slogo.instruction.Sum;
+
+/**
+ * @author Keith Denning
+ *
+ */
+public class SumParser implements Parser {
+
+	public SumParser() {
+	}
+
+	/* (non-Javadoc)
+	 * @see slogo.parser.Parser#parse(slogo.SLogoInterpreter)
+	 */
+	@Override
+	public GrammarElement parse(SLogoInterpreter interpreter) {
+		InstructionParser instructionParser = InstructionParser.getInstance();
+		
+		// already know this is a FORWARD command because InstructionParser
+		// called this parse method.
+		interpreter.nextToken(); // eat FORWARD token
+		ArithmeticBase e = (ArithmeticBase) instructionParser.parse(interpreter);
+		ArithmeticBase f = (ArithmeticBase) instructionParser.parse(interpreter);
+		return new Sum(e, f);
+	}
+
+}

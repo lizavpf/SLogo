@@ -1,0 +1,272 @@
+package slogo.turtle;
+
+import java.awt.*;
+import java.awt.geom.*;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * This class is a simple MoboLogo/Slogo turtle model for illustrating
+ * rudimentary MVC for turtles and simple Graphics2D concepts
+ * 
+ * @author Owen Astrachan
+ */
+public class JTurtle {
+	
+	
+	/**
+	 * Create a turtle using the default (triangle) image.
+	 */
+	public JTurtle() {
+		this(new PolyRenderer());
+	}
+
+	/**
+	 * Creates a turtle using the given image
+	 * 
+	 * @param img
+	 *            the image to use for the turtle
+	 */
+	public JTurtle(Image img) {
+		this(new ImageRenderer(img));
+	}
+
+	private JTurtle(Renderer renderer) {
+		reset();
+		myRenderer = renderer;
+		myListeners = new ArrayList<>();
+	}
+
+	/**
+	 * Mirrors the functionality of JComponent/Component. The current turtle
+	 * isn't a Component, but it sort of acts like one (it's drawable).
+	 * 
+	 * @see java.awt.Component#getBounds
+	 */
+	public Rectangle getBounds(Rectangle r) {
+		r.height = HEIGHT;
+		r.width = WIDTH;
+		return r;
+	}
+
+	/**
+	 * Reposition turtle at the origin, facing north.
+	 */
+	public void reset() {
+		myHeading = 0.0;
+		myPoint = new Point2D.Double(0, 0);
+		myNextPoint = new Point2D.Double(0, 0);
+	}
+
+	/**
+	 * Draw the turtle, pass in a Graphics2D object.
+	 * 
+	 * @param g
+	 *            is the graphics context in which Turtle is drawn
+	 */
+	public void draw(Graphics g) {
+		
+		Graphics2D g2 = (Graphics2D) g;
+
+		// translate relative to center of screen with y increasing
+		g2.translate(START_X + myPoint.getX(), START_Y - myPoint.getY());
+		// rotate so turtle drawn in right orientation
+		g2.rotate(trueHeading());
+		myRenderer.paint(g2);
+		// undo transformations to leave graphics in same state as before
+		g2.rotate(-trueHeading());
+		g2.translate(-(START_X + myPoint.getX()), -(START_Y - myPoint.getY()));
+		
+		if (penDown){
+			addPoint(myPoint);
+			drawLines(g);
+		}
+	}
+	
+	public void addPoint(Point2D point){
+		points.add(point);
+	}
+	
+	public void drawLines(Graphics g){
+		Graphics2D g2 = (Graphics2D) g;
+		g2.setColor(Color.black);
+		for (int i = 0; i < points.size()-1; i++) {
+			int x1 = (int) points.get(i).getX();
+			int y1 = (int) points.get(i).getY();
+			int x2 = (int) points.get(i+1).getX();
+			int y2 = (int) points.get(i+1).getY();
+			g2.drawLine(x1, y1, x2, y2);
+			myRenderer.paint(g2);
+		}		
+	}
+	
+/*	public void hideTurtle(Graphics g){
+		Graphics2D g2 = (Graphics2D) g;
+		Color backgroundColor = g2.getColor();
+		myRenderer.paint(g2);
+		g2.setColor(backgroundColor);
+		
+		showing = false;
+	}
+	
+	public void showTurtle(Graphics g){
+		Graphics2D g2 = (Graphics2D) g;
+		myRenderer.paint(g2);
+		
+		showing = true;
+		
+	}
+	
+	public boolean turtleShowing(){
+		if(showing = true){
+			return true;
+		}
+		return false;
+	}*/
+	
+
+	/**
+	 * Return the real/true heading of the turtle. A Turtle's "heading" is what
+	 * naive users would expect, i.e., 0 degrees == north, 90 degrees = east,
+	 * -90 degrees = west. The trueheading translates to what Graphics/geometry
+	 * expects
+	 * 
+	 * @return the true heading in radians
+	 */
+	protected double trueHeading() {
+		return Math.PI + myHeading;
+	}
+
+	/**
+	 * Moves the turtle forward. If the pen is down draw lines
+	 * 
+	 * @param steps
+	 *            is the number of steps moved
+	 */
+	public void move(int steps) {
+
+		double deltaX = Math.sin(getHeading()) * steps;
+		double deltaY = Math.cos(getHeading()) * steps;
+
+		myNextPoint.setLocation(myPoint.getX() + deltaX, myPoint.getY() + deltaY);
+		
+		if (penDown) {
+			addPoint(myPoint);
+			addPoint(myNextPoint);
+		}
+		
+		myPoint.setLocation(myNextPoint.getX(), myNextPoint.getY());
+		
+		notifyListeners();
+	}
+	
+	
+	/**
+	 * Enables the turtle to draw lines
+	 * @return 
+	 */
+	public void penDown(){
+		penDown = true;
+	}
+	
+	/**
+	 * Disables the turtle to draw lines
+	 */
+	public void penUp(){
+		penDown = false;
+	}
+	
+	public Color setPenColor(Color color){
+		return color;
+	}
+	
+	public int setPenWidth(int width) {
+		return width;
+	}
+
+	/**
+	 * Set heading in degrees, notify listeners.
+	 * 
+	 * @param degrees
+	 *            will be Turtle's new heading
+	 */
+	public void setHeading(int degrees) {
+		setHeading(Math.toRadians(degrees));
+	}
+
+	/**
+	 * Set heading in radians, notify listeners.
+	 * 
+	 * @param radians
+	 *            Turtle's new heading
+	 */
+	public void setHeading(double radians) {
+		myHeading = radians;
+		notifyListeners();
+	}
+
+	/**
+	 * Returns the naive view of heading, 0 degrees = north
+	 * 
+	 * @return the heading
+	 */
+	public double getHeading() {
+		return myHeading;
+	}
+
+	/**
+	 * Returns the turtle's point (should be centroid)
+	 * 
+	 * @return the center point
+	 */
+	public Point2D getPoint() {
+		return myPoint;
+	}
+
+	/**
+	 * Ask all registered listeners to process this turtle
+	 */
+	public void notifyListeners() {
+		for (TurtleListener listener : myListeners) {
+			listener.processTurtle(this);
+		}
+	}
+
+	/**
+	 * Add a listener.
+	 * 
+	 * @param listener
+	 *            is the listener added
+	 */
+	public void addTurtleListener(TurtleListener listener) {
+		myListeners.add(listener);
+	}
+
+	/**
+	 * Sets the turtles point, notifies listeners.
+	 * 
+	 * @param p
+	 *            is the new center point
+	 */
+	public void setPoint(Point2D p) {
+		myPoint = p;
+		notifyListeners();
+	}
+
+	double myHeading;
+	public Point2D myPoint;
+	public Point2D myNextPoint;
+	Renderer myRenderer;
+	private boolean penDown = true;
+	public ArrayList<Point2D> points = new ArrayList<Point2D>();
+	public Color color = Color.black;
+	public int width;
+	private boolean showing = true;
+
+	static final int START_X = 300;
+	static final int START_Y = 150;
+	static final int WIDTH = 20;
+	static final int HEIGHT = 40;
+	private List<TurtleListener> myListeners;
+}
+

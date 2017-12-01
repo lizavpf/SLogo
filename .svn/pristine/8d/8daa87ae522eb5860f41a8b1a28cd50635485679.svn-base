@@ -1,0 +1,38 @@
+/**
+ * 
+ */
+package slogo.instruction;
+
+import slogo.Context;
+import slogo.GrammarElement;
+
+/**
+ * @author Keith Denning
+ *
+ */
+public class Minus extends Instruction {
+
+	private GrammarElement expression;
+	
+	/**
+	 * 
+	 */
+	public Minus(GrammarElement e) {
+		expression = e;
+	}
+
+	/* (non-Javadoc)
+	 * @see slogo.instruction.Instruction#evaluate(slogo.Context)
+	 */
+	@Override
+	public Object evaluate(Context c) {
+		double val = (Double) expression.evaluate(c);
+		
+		return -val;
+	}
+	
+	@Override
+	public String toString() {
+		return "MINUS " + expression;
+	}
+}

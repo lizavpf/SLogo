@@ -1,0 +1,54 @@
+/**
+ * 
+ */
+package slogo.instruction;
+
+import slogo.Context;
+import slogo.expression.ArithmeticBase;
+import slogo.turtle.JTurtle;
+
+/**
+ * @author Keith Denning
+ *
+ */
+public class Forward extends Instruction {
+	
+	private ArithmeticBase expression;
+
+	/**
+	 * Constructs a forward instruction that can be executed
+	 *
+	 * @param e
+	 *            grammar element
+	 * @param sil
+	 *            strict instruction list that is the body
+	 */
+	public Forward(ArithmeticBase e) {
+		expression = e;
+	}
+
+	/**
+	 * Evaluate this instruction in a Context.
+	 * 
+	 * @param c
+	 *            the Context for the evaluation
+	 * @return the result of evaluating the instruction list the last time
+	 */
+	@Override
+	public Object evaluate(Context c) {
+		int val = (int) expression.value(c);
+		JTurtle turtle;
+		turtle = (JTurtle) c.value("Leonardo");
+		turtle.move(val);
+		return expression;
+	}
+	
+	/**
+	 * @return fd followed by the expression and list of instructions
+	 */
+	@Override
+	public String toString() {
+		return "FORWARD " + expression;
+	}
+
+}

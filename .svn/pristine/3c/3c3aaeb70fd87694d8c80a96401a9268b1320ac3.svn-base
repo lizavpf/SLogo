@@ -1,0 +1,523 @@
+package slogo.turtle;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.event.*;
+
+import slogo.SLogoInterpreter;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.List;
+
+/**
+ * Rudimentary view showing turtles and MVC. Illustrates simple Model/View
+ * decomposition, not meant as an example of what a real Slogo view would be. In
+ * this implementation the View creates the Model/JTurtle object.
+ * 
+ * @author Owen Astrachan, with modifications by Sara Sprenkle
+ */
+public class TurtleField extends JFrame implements TurtleListener {
+	private static final long serialVersionUID = -7788775481723044549L;
+
+	private DrawingPanel myDisplay;
+	private JTextField myXPoint;
+	private JTextField myYPoint;
+	private JTextField myAngle;
+	private JTextField myConsole;
+	private JComboBox<String> myStepSize;
+	private Font myFont;
+	private TurtleContext turtleContext;
+	private SLogoInterpreter interpreter;
+	private JButton stepper;
+	private JMenuBar menuBar;
+	private JMenu menu;
+	private JMenu menuWindow;
+	private JMenuItem menuItem;
+	private JMenuItem menuImageItem;
+
+	private JTurtle myTurtle;
+	private JSlider slider;
+	private Color current;
+	//private List<Point2D> points;
+
+	public static void main(String args[]) {
+		if (args.length == 1) {
+			TurtleField tField = new TurtleField(args[0]);
+			tField.myTurtle.move(-1);
+			tField.stepper.doClick();
+		} else {
+			TurtleField tField = new TurtleField();
+			tField.myTurtle.move(-1);
+			tField.stepper.doClick();
+		}
+	}
+
+	/**
+	 * Creates a view of the turtle, given by the name of the turtle image
+	 * 
+	 * @param turtleImgName
+	 *            - the location of the turtle image file
+	 */
+	public TurtleField(String turtleImgLocName) {
+		init();
+		JTurtle turtle = null;
+		try {
+			Image img = makeImage(turtleImgLocName);
+			turtle = new JTurtle(img);
+			turtleContext = new TurtleContext(turtle);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("Reverting to default turtle rendered");
+			// use the default turtle
+			turtle = new JTurtle();
+		}
+		setTurtle(turtle);
+	}
+
+	/**
+	 * Creates a view of the turtle, using the default turtle representation
+	 */
+	public TurtleField() {
+		init();
+		JTurtle turtle = new JTurtle();
+		setTurtle(turtle);
+		turtleContext = new TurtleContext(turtle);
+	}
+
+	private void init() {
+		setTitle("Turtle Field");
+		
+		JPanel topPanel = (JPanel) getContentPane();
+		topPanel.setLayout(new BorderLayout());
+		
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout());
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+		makeDashBoard(panel);
+		makeSlider(panel);
+		makePenDashboard(panel);
+		
+		setJMenuBar(makeMenuBar());
+
+		myDisplay = new BufferedPanel();
+		panel.add(myDisplay, BorderLayout.CENTER);
+		
+		makeTextArea(topPanel);
+		topPanel.add(panel, BorderLayout.CENTER);
+		
+		
+		pack();
+		setSize(1000, 600);
+		setVisible(true);
+	}
+
+	public void setTurtle(JTurtle turtle) {
+		myTurtle = turtle;
+		myTurtle.addTurtleListener(this);
+		processTurtle(myTurtle); // show the turtle when set
+	}
+
+	/**
+	 * make a slider to set the turtle's heading
+	 */
+	private void makeSlider(JPanel panel) {
+		slider = new JSlider(-180, 180, 0);
+		slider.setMajorTickSpacing(30);
+		slider.setPaintLabels(true);
+
+		slider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+
+				int angle = (((JSlider) e.getSource()).getValue());
+				myTurtle.setHeading(angle);
+			}
+		});
+		panel.add(slider, BorderLayout.SOUTH);
+		
+	}
+
+	private JTextField makeTextField() {
+		JTextField tf = new JTextField(10);
+		tf.setFont(myFont);
+		tf.setHorizontalAlignment(JTextField.RIGHT);
+		return tf;
+	}
+
+	/**
+	 * Where turtle info is displayed
+	 */
+	private void makeDashBoard(JPanel panel) {
+		JPanel dashPanel = new JPanel();
+		myFont = new Font("Monospaced", Font.BOLD, 18);
+
+		JPanel tempPanel = new JPanel();
+
+		myXPoint = makeTextField();
+		myYPoint = makeTextField();
+		myAngle = makeTextField();
+
+		tempPanel.add(new JLabel("X "));
+		tempPanel.add(myXPoint);
+		tempPanel.add(new JLabel("Y "));
+		tempPanel.add(myYPoint);
+		tempPanel.add(myAngle);
+		tempPanel.add(new JLabel("degrees"));
+		tempPanel.setBorder(BorderFactory.createTitledBorder("turtle stats"));
+		dashPanel.add(tempPanel);
+
+		String[] nums = { "1", "2", "5", "10", "20" };
+		myStepSize = new JComboBox<>(nums);
+		myStepSize.setFont(myFont);
+
+		tempPanel = new JPanel();
+		tempPanel.setBorder(BorderFactory.createTitledBorder("step size"));
+		stepper = new JButton("Step");
+		stepper.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				doSteps();
+			}
+		});
+		tempPanel.add(stepper);
+		tempPanel.add(myStepSize);
+		dashPanel.add(tempPanel);
+		
+		
+
+		panel.add(dashPanel, BorderLayout.NORTH);
+
+	}
+	private void makePenDashboard(JPanel panel){
+		Box box = Box.createVerticalBox();
+		
+		box.setBorder(BorderFactory.createTitledBorder("pen options"));
+		JButton penDownButton = new JButton("Pen Down");
+		JButton penUpButton = new JButton("Pen Up");
+		
+		penDownButton.setEnabled(false);
+		
+		penDownButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			penDown();
+			penUpButton.setEnabled(true);
+			penDownButton.setEnabled(false);
+			}
+		});
+		
+		penUpButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			penUp();
+			penUpButton.setEnabled(false);
+			penDownButton.setEnabled(true);
+			}
+		});
+		
+		/*if (myTurtle.penDown()){
+			penUpButton.setEnabled(true);
+			penDownButton.setEnabled(false);
+		} else {
+			penUpButton.setEnabled(false);
+			penDownButton.setEnabled(true);
+		}*/
+		
+		JButton penColorButton = new JButton("Pen color");
+		penColorButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                Color newColor = JColorChooser.showDialog(null, "Choose a color", current);
+                myTurtle.setPenColor(newColor);
+            }
+        });
+		
+		JSlider penWidthSlider = new JSlider(5, 35, 20);
+		penWidthSlider.setOrientation(JSlider.VERTICAL);
+		penWidthSlider.setMajorTickSpacing(5);
+		penWidthSlider.setPaintLabels(true);
+
+		penWidthSlider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+
+				int width = (((JSlider) e.getSource()).getValue());
+				myTurtle.setPenWidth(width);
+			}
+		});
+
+		box.add(penDownButton);
+		box.add(penUpButton);
+		box.add(penColorButton);
+		box.add(penWidthSlider);
+		
+		panel.add(box, BorderLayout.WEST);
+
+	}
+	
+	private void makeTextArea(JPanel panel){
+		JPanel textPanel = new JPanel();
+		textPanel.setLayout(new BorderLayout());
+		
+		JTextArea commandHistory = new JTextArea("Howdy! Welcome to Objectively Classy's SLogo IDE\n",7, 40);
+		commandHistory.setEditable(false);
+		commandHistory.setSize(1, 1);
+		
+		JScrollPane scroll = new JScrollPane (commandHistory, 
+				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		
+		textPanel.add(scroll, BorderLayout.NORTH);
+		
+		JPanel commandPanel = new JPanel();
+		
+		myConsole = new JTextField(35);
+		
+		myConsole.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				enterPressed(e);	
+			}
+		
+			protected void enterPressed(KeyEvent e){
+				if (e.getKeyCode() == KeyEvent.VK_ENTER){
+					interpreter = new SLogoInterpreter();
+					StringReader reader = new StringReader(myConsole.getText().toUpperCase());
+					List<String> evaluateList = interpreter.interpret(reader, turtleContext);
+					
+					for (String s : evaluateList) {
+						commandHistory.append(s);
+						commandHistory.append("\n");
+					}
+				}
+			}
+		});
+		
+		JButton enterButton = new JButton("Enter");
+		//add an action listener that passes value onto interpreter, maybe use getText()?
+		enterButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				interpreter = new SLogoInterpreter();
+				StringReader reader = new StringReader(myConsole.getText().toUpperCase());
+				List<String> evaluateList = interpreter.interpret(reader, turtleContext);
+				
+				for (String s : evaluateList) {
+					commandHistory.append(s);
+					commandHistory.append("\n");
+				}
+			}
+		});
+		
+		commandPanel.add(enterButton);
+		commandPanel.add(myConsole);
+
+		textPanel.add(commandPanel, BorderLayout.CENTER);
+		
+		panel.add(textPanel, BorderLayout.SOUTH);
+	}
+	
+	public JMenuBar makeMenuBar() {
+		menuBar = new JMenuBar();
+		
+		menu = new JMenu("File");
+		menuBar.add(menu);
+		
+		menuWindow = new JMenu("Window");
+		menuBar.add(menuWindow);
+		
+		menuItem = new JMenuItem("Load SLogo code");
+		menuImageItem = new JMenuItem("Load New Turtle Image");
+		
+		final JFileChooser slogoFile = new JFileChooser();
+		
+		menuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//int returnVal = slogoFile.showOpenDialog(menuItem);
+				//System.out.println(returnVal);
+				//slogoFile.setCurrentDirectory(new java.io.File("."));
+				//slogoFile.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				//slogoFile.setAcceptAllFileFilterUsed(true);
+				if (slogoFile.showOpenDialog(menuItem) == JFileChooser.APPROVE_OPTION)
+				{      
+				    File fileSelected = slogoFile.getCurrentDirectory(); 
+				    fileSelected.getAbsolutePath();
+				    try {
+						BufferedReader reader = new BufferedReader(new FileReader(fileSelected));
+
+						SLogoInterpreter interpreter = new SLogoInterpreter();
+						interpreter.interpret(reader, null);
+					} catch (FileNotFoundException e) {
+						System.out.println("Couldn't open " + fileSelected);
+					}
+				}
+			}
+		});
+		
+		menuImageItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (slogoFile.showOpenDialog(menuItem) == JFileChooser.APPROVE_OPTION)
+				{      
+				    File fileSelected = slogoFile.getCurrentDirectory(); 
+				    fileSelected.getAbsolutePath();
+				    try {
+						BufferedReader reader = new BufferedReader(new FileReader(fileSelected));
+
+						SLogoInterpreter interpreter = new SLogoInterpreter();
+						interpreter.interpret(reader, null);
+					} catch (FileNotFoundException e) {
+						System.out.println("Couldn't open " + fileSelected);
+					}
+				}
+			}
+		});
+		
+		menu.add(menuItem);
+		menuWindow.add(menuImageItem);
+		
+		return menuBar;
+	}
+	
+	/**
+	 * Changes the penDown to true
+	 */
+	public void penDown(){
+		myTurtle.penDown();
+	}
+	
+	/**
+	 * changes penDown to false
+	 */
+	public void penUp(){
+		myTurtle.penUp();
+	}
+
+	/**
+	 * Process a (changed) turtle, display properties and redraw.
+	 * 
+	 * @param turtle
+	 *            is the turtle being displayed
+	 */
+	public void processTurtle(JTurtle turtle) {
+		showAngle((int) Math.round(Math.toDegrees(turtle.getHeading())));
+		// to set the slider to a current value
+		int currentAngle = (int) Math.round(Math.toDegrees(myTurtle.getHeading()));
+		while (currentAngle <= -180) currentAngle += 360;
+		while (currentAngle > 180) currentAngle -= 360;
+		slider.setValue(currentAngle);
+		showPoint(myTurtle.getPoint());
+		myDisplay.draw();
+	}
+
+	/**
+	 * display Turtle's point information
+	 */
+	public void showPoint(Point2D d) {
+		int x = (int) d.getX() * 100;
+		int y = (int) d.getY() * 100;
+		myXPoint.setText("" + x / 100.0);
+		myYPoint.setText("" + y / 100.0);
+	}
+
+	/**
+	 * Display (Turtle's) angle
+	 * 
+	 * @param angle
+	 *            is the angle displayed
+	 */
+	public void showAngle(int angle) {
+		while (angle <= -180) angle += 360;
+		while (angle > 180) angle -= 360;
+		myAngle.setText("" + angle);
+		
+	}
+
+	/**
+	 * Make the turtle take some steps.
+	 */
+	public void doSteps() {
+		myTurtle.move(getMoveSize());
+	}
+
+	/**
+	 * Returns step size as currently selected.
+	 * 
+	 * @return the current step size
+	 */
+	public int getMoveSize() {
+		return Integer.parseInt((String) myStepSize.getSelectedItem());
+	}
+
+	/** 
+	 * 
+	 * @param imageFileName
+	 * @return the image at that filename
+	 * @throws IOException if there is an error reading in the file
+	 */
+	public Image makeImage(String imageFileName) throws IOException {
+		Image img = null;
+		img = ImageIO.read(new File(imageFileName));
+		return img;
+	}
+	
+
+	public class DrawingPanel extends JPanel {
+		private static final long serialVersionUID = 5111282143227508207L;
+
+		public void draw() {
+			Graphics g = getGraphics();
+			myTurtle.draw(g);
+		}
+	}
+
+	/**
+	 * Overkill with double buffering on by default, but shows how to do it.
+	 */
+	public class BufferedPanel extends DrawingPanel {
+		private static final long serialVersionUID = -1127093142988859984L;
+
+		public BufferedPanel() {
+			myBoundingBox = new Rectangle();
+		}
+
+		public void draw() {
+			Graphics g = getGraphics();
+			myBoundingBox = myTurtle.getBounds(myBoundingBox);
+			Dimension size = getSize();
+
+			RepaintManager rm = RepaintManager.currentManager(this);
+			Image offImage = rm.getOffscreenBuffer(this, size.width, size.height);
+
+			Graphics2D offg = (Graphics2D) offImage.getGraphics();
+
+			if (offg == null) {
+				System.err.println("didn't get offscreen image");
+				return;
+			}
+
+			try {
+				// erase complete offscreen image
+				offg.setColor(getBackground());
+				offg.clearRect(0, 0, size.width, size.height);
+
+				myTurtle.draw(offg);
+				g.drawImage(offImage, 0, 0, this);
+			} finally {
+				offg.dispose();
+				g.dispose();
+			}
+
+		}
+
+		private Rectangle myBoundingBox;
+	}
+}

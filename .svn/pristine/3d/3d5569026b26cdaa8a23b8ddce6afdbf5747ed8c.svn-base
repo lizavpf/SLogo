@@ -1,0 +1,42 @@
+/**
+ * 
+ */
+package slogo.instruction;
+
+import slogo.Context;
+import slogo.GrammarElement;
+
+/**
+ * @author Keith Denning
+ *
+ */
+public class Less extends Instruction {
+
+	private GrammarElement expression1;
+	private GrammarElement expression2;
+	
+	public Less(GrammarElement e, GrammarElement f) {
+		expression1 = e;
+		expression2 = f;
+	}
+
+	/* (non-Javadoc)
+	 * @see slogo.instruction.Instruction#evaluate(slogo.Context)
+	 */
+	@Override
+	public Object evaluate(Context c) {
+		double val1 = (Double) expression1.evaluate(c);
+		double val2 = (Double) expression2.evaluate(c);
+		
+		if (val1 < val2)
+			return 1;
+		else
+			return 0;
+	}
+	
+	@Override
+	public String toString() {
+		return "LESS? " + expression1 + " " + expression2;
+	}
+
+}

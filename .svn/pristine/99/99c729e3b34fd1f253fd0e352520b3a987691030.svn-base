@@ -1,0 +1,22 @@
+to circle
+[
+  repeat 360
+  [
+    fd 1 
+    rt 1
+  ]
+]
+
+
+repeat 12
+[
+	circle
+
+	penup
+
+	rt 30
+	fd 15
+
+	pendown
+
+]

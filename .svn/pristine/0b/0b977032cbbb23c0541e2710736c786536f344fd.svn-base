@@ -1,0 +1,24 @@
+package slogo.parser;
+
+import slogo.*;
+import slogo.instruction.*;
+
+/**
+ * 
+ * @author amberly wang
+ *
+ */
+
+public class PenUpParser implements Parser {
+	
+	public PenUpParser() {
+	}
+	
+	@Override
+	public GrammarElement parse(SLogoInterpreter interpreter) {
+		
+		interpreter.nextToken(); // eat PENUP token
+		return new PenUp();
+		
+	}
+}

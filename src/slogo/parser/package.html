@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<title>slogo.parser</title>
+</head>
+
+<body>
+	<p>This package is responsible for parsing the language SLogo. It
+		uses recursive descent with, currently, no lookahead.</p>
+
+	<h2>Adding/Parsing a New Instruction</h2>
+
+	<p>
+		To parse a new instruction the following steps are followed. We'll use
+		the addition of an
+		<code>If</code>
+		instruction to the language as an example.
+	</p>
+
+	<ol>
+		<li>Create a token for the instruction (probably a subclass of {@link
+			slogo.parser.token.ReservedToken token.ReservedToken}) with the same
+			prefix as the new instruction, e.g., <code>IfToken.java</code>.
+		</li>
+		<li>Create a parser for the instruction with the same prefix as
+			the instruction, e.g., <code>IfParser.java</code>. The parsing class
+			(presumably implementing {@link slogo.parser.Parser Parser}) will
+			return an instance of the parsed Instruction, see the next item.
+		</li>
+		<li>Create an instruction with prefix name, e.g., <code>If.java</code>
+			in the {@link slogo.instruction slogo.instruction} package.
+		</li>
+		<li>Add the instruction name to the file <code>instructions.prop</code>,
+			e.g., add a single line to the file containing the string <em>If</em>.
+		</li>
+	</ol>
+
+</body>
+</html>

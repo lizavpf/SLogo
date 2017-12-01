@@ -1,0 +1,2 @@
+x = 20 
+repeat x [ fd x repeat x [ fd 50 right 80 fd 20 left 160 ] right 90 fd 10 ]

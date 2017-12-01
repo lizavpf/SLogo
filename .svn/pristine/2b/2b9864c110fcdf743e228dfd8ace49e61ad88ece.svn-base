@@ -1,0 +1,31 @@
+package slogo.instruction;
+
+import slogo.*;
+import slogo.expression.ArithmeticBase;
+
+/**
+ * Represents a subtraction (e.g., lhs - rhs)
+ * 
+ * @author Owen Astrachan
+ * 
+ */
+public class Subtraction extends BinaryExpression {
+
+	/**
+	 * Represents a subtraction
+	 * 
+	 * @param lhs
+	 *            the left-hand side of the subtraction (before the -)
+	 * @param rhs
+	 *            the right-hand side of the subtraction (after the -)
+	 */
+	public Subtraction(ArithmeticBase lhs, ArithmeticBase rhs) {
+		super(lhs, rhs);
+		mySymbol = "-";
+	}
+
+	@Override
+	public double value(Context c) {
+		return leftValue(c) - rightValue(c);
+	}
+}

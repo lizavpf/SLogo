@@ -1,0 +1,12 @@
+to square2 distance
+[
+  repeat 4
+  [
+    fd distance
+    rt 90
+  ]
+]
+
+
+cs
+square2

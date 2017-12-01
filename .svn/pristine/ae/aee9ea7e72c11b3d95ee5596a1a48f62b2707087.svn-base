@@ -1,0 +1,30 @@
+/**
+ * 
+ */
+package slogo.turtle;
+
+import slogo.Context;
+
+/**
+ * @author Liza
+ *
+ */
+public class TurtleContext implements Context{
+
+	JTurtle turtle;
+	/**
+	 * 
+	 */
+	public TurtleContext(JTurtle turtle) {
+		// TODO Auto-generated constructor stub
+		this.turtle = turtle;
+	}
+
+	@Override
+	public Object value(String name) {
+		// TODO Auto-generated method stub
+		return this.turtle;
+	}
+	
+
+}

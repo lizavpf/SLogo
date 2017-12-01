@@ -1,0 +1,26 @@
+/**
+ * 
+ */
+package slogo.instruction.test;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+import slogo.turtle.JTurtle;
+
+/**
+ * @author amberly
+ *
+ */
+public class SetxyTest {
+	
+	JTurtle turtle = new JTurtle();
+
+	@Test
+	public void test() {
+		turtle.myPoint.setLocation(50, 50);
+		assertEquals(50, turtle.getPoint());
+	}
+
+}

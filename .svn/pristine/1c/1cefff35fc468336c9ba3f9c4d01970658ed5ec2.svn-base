@@ -1,0 +1,31 @@
+/**
+ * 
+ */
+package slogo.parser;
+
+import slogo.GrammarElement;
+import slogo.SLogoInterpreter;
+import slogo.instruction.HideTurtle;
+
+/**
+ * @author Emily Cohen
+ *
+ */
+public class HTParser implements Parser{
+	public HTParser(){
+		
+	}
+
+	/**
+	 * Parses Show Turtle instruction
+	 */
+	@Override
+	public GrammarElement parse(SLogoInterpreter interpreter) {
+
+		interpreter.nextToken(); 
+ 
+		return new HideTurtle();
+	}
+
+}
+

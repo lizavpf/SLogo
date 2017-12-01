@@ -1,0 +1,33 @@
+/**
+ * 
+ */
+package slogo.parser;
+
+import slogo.GrammarElement;
+import slogo.SLogoInterpreter;
+import slogo.instruction.Right;
+
+/**
+ * @author Emily Cohen 
+ *
+ */
+public class RTParser implements Parser{
+	/**
+	 * 
+	 */
+	public RTParser() {
+	}
+
+	@Override
+	public GrammarElement parse(SLogoInterpreter interpreter) {
+		InstructionParser instructionParser = InstructionParser.getInstance();
+		
+		// already know this is a RIGHT command because InstructionParser
+		// called this parse method.
+		interpreter.nextToken(); // eat RIGHT token
+		GrammarElement e = instructionParser.parse(interpreter);
+		return new Right(e);
+		
+	}
+
+}

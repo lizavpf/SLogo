@@ -1,0 +1,16 @@
+package slogo.parser;
+
+import slogo.*;
+import slogo.instruction.*;
+
+public class PenDownPParser implements Parser{
+
+	public PenDownPParser () {
+	}
+	
+	@Override
+	public GrammarElement parse(SLogoInterpreter interpreter) {
+		interpreter.nextToken();
+		return new PenDownP();
+	}
+}

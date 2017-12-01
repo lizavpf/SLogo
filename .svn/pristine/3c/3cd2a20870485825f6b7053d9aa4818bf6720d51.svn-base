@@ -1,0 +1,55 @@
+package slogo.instruction;
+
+import slogo.Context;
+import slogo.GrammarElement;
+import slogo.turtle.JTurtle;
+
+/**
+ * @author Kevin Havermann
+ *
+ */
+public class Left extends Instruction {
+	private GrammarElement expression;
+
+	/**
+	 * Builds a left instruction that can be executed by user
+	 *
+	 * @param e
+	 *            grammar element
+	 * @param sil
+	 *            strict instruction list that is the body
+	 */
+	public Left(GrammarElement e) {
+		expression = e;
+	}
+
+	/**
+	 * Evaluate this instruction in a Context.
+	 * 
+	 * @param c
+	 *            the Context for the evaluation
+	 * @return the result of evaluating the instruction list the last time
+	 */
+	@Override
+	public Object evaluate(Context c) {
+				
+		Double val = (Double) expression.evaluate(c);
+		JTurtle turtle;
+		turtle = (JTurtle) c.value("Leonardo");
+		double currentHeading = turtle.getHeading();
+		double angle = Math.toRadians(val);
+		double newAngle = (-angle + currentHeading);
+		turtle.setHeading(newAngle);
+		
+		return expression;
+	}
+	
+	/**
+	 * @return lt followed with the expression and list of instructions
+	 */
+	@Override
+	public String toString() {
+		return "LEFT " + expression;
+	}
+
+}

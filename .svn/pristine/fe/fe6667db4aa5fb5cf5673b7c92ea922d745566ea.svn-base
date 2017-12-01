@@ -1,0 +1,9 @@
+package slogo.parser.token;
+
+public class NotEqualToken extends ReservedToken {
+
+	public NotEqualToken() {
+		super("NOTEQUAL");
+	}
+
+}

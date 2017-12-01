@@ -1,0 +1,143 @@
+package slogo;
+
+import java.io.*;
+
+import slogo.CharConsts;
+import slogo.GrammarElement;
+import slogo.parser.InstructionParser;
+import slogo.parser.ParseException;
+import slogo.parser.token.*;
+
+/**
+ * Main driver for the SLogo interpreter.
+ * 
+ * Illustrates the java.io.StreamTokenizer class and how it can be used to parse
+ * tokens for a subset of the SLogo programming language. For the current
+ * implementation, a few simple instructions are parsed, but infrastructure is
+ * in place for parsing the complete language.
+ * 
+ * @see slogo.expression
+ * @see slogo.instruction
+ * @see slogo.parser.InstructionParser
+ * 
+ * @author Owen Astrachan
+ */
+public class SLogoInterpreter {
+
+	private StreamTokenizer myTokenizer;
+	private Token myToken;
+
+	/**
+	 *
+	 */
+	public SLogoInterpreter() {
+
+	}
+
+	/**
+	 * interprets the contents of the Reader: parsing
+	 * expression(s) and prints the result of evaluating the expression(s).
+	 *
+	 * @param reader
+	 *            the reader that will be tokenized
+	 */
+	public void interpret(Reader reader, Context c) {
+		// set up the tokenizer to recognize identifiers that start with letters
+		// or underscores, to allow C and C++ style comments, and to use "" for
+		// quotes
+		myTokenizer = new StreamTokenizer(reader); 
+
+		myTokenizer.quoteChar(CharConsts.QUOTE);
+		myTokenizer.slashSlashComments(true);
+		myTokenizer.slashStarComments(true);
+		myTokenizer.wordChars('a', 'z');
+		myTokenizer.wordChars('A', 'Z');
+		myTokenizer.wordChars('_', '_');
+		myTokenizer.eolIsSignificant(false);
+
+		// parsing numbers is a good idea; allow it
+		myTokenizer.parseNumbers();
+
+		InstructionParser ip = InstructionParser.getInstance();
+		Token result = nextToken(); // prime loop, make getToken() work
+
+		while (true) {
+			result = getToken();
+
+			if (EOFToken.getInstance().equals(result)) {
+				break;
+			}
+			GrammarElement inst = (GrammarElement) ip.parse(this);
+			System.out.println(" evaluated " + inst + ": " + inst.evaluate(c));
+		}
+	}
+
+	/**
+	 * get the next token and store it for retrieval by getToken()
+	 * 
+	 * @return the current (just read) token
+	 */
+	public Token nextToken() {
+		myToken = TokenFactory.parse(myTokenizer);
+		return myToken;
+	}
+
+	/**
+	 * returns the current token, doesn't fetch a new one
+	 * 
+	 * @return the current token
+	 */
+	public Token getToken() {
+		return myToken;
+	}
+
+	/**
+	 * try to match a token, if unsuccessful throw an exception, otherwise match
+	 * succeeds, and next token is obtained and returned
+	 * 
+	 * @param rhs
+	 *            token being matched
+	 * @return the next read token
+	 * @throws ParseException
+	 *             if match fails
+	 */
+	public Token match(Token rhs) {
+		Token result = getToken();
+		if (!result.equals(rhs)) {
+			throw new ParseException("expected " + rhs + " got " + result);
+		}
+		return nextToken();
+	}
+
+	/**
+	 * @param t
+	 *            token where error occurred
+	 * @throws a
+	 *             ParseException labeled by t
+	 */
+	public void error(Token t) {
+		throw new ParseException("error with token " + t);
+	}
+
+	/**
+	 * Basic driver for SLogoParser
+	 * 
+	 * @param args
+	 */
+	public static void main(String args[]) {
+		// just for testing. Could generalize this and use a command-line
+		// argument.
+		final String fileName = "slogo_programs/if_and_print.logo";
+
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(fileName));
+
+			SLogoInterpreter interpreter = new SLogoInterpreter();
+			interpreter.interpret(reader, null);
+		} catch (FileNotFoundException e) {
+			System.out.println("Couldn't open " + fileName);
+		}
+		
+		
+	}
+}

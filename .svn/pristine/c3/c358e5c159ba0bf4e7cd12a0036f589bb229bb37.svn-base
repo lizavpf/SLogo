@@ -1,0 +1,52 @@
+package slogo.instruction;
+
+import java.awt.*;
+import slogo.Context;
+import slogo.turtle.JTurtle;
+
+/**
+ * @author Emily Cohen
+ *
+ */
+public class ShowTurtle extends Instruction{
+	private Graphics2D g;
+	
+	/**
+	 * Constructs a forward instruction that can be executed
+	 *
+	 * @param sil
+	 *            strict instruction list that is the body
+	 */
+
+	public ShowTurtle() {
+		
+	}
+	
+	/**
+	 * Evaluate this instruction in a Context.
+	 * 
+	 * @param c
+	 *            the Context for the evaluation
+	 * @return the result of evaluating the instruction list the last time
+	 */
+	@Override
+	public Object evaluate(Context c) {
+		JTurtle turtle;
+		turtle = (JTurtle) c.value("Leonardo");
+		
+		boolean showing = turtle.turtleShowing();
+		if (showing == false){
+			turtle.showTurtle(g);
+		}
+		
+		return turtle.turtleShowing();
+	}
+	
+	/**
+	 * shows turtle 
+	 */
+	@Override
+	public String toString() {
+		return "SHOW TURTLE";
+	}
+}

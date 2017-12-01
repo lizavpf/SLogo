@@ -1,0 +1,14 @@
+/**
+ * 
+ */
+package slogo.parser.token;
+
+/**
+ * @author Keith Denning
+ *
+ */
+public class LessToken extends ReservedToken {
+	public LessToken() {
+		super("LESS");
+	}
+}

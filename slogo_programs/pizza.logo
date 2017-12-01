@@ -1,0 +1,18 @@
+to ANGLE
+[
+  RT 30
+  FD 50
+  LT 105
+  FD 25
+  BK 25
+  RT 105
+  BK 50
+]
+
+to PIZZA
+[
+  REPEAT 12
+  [
+    ANGLE
+  ]
+]

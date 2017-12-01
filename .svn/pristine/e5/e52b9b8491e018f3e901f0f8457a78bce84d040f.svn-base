@@ -1,0 +1,6 @@
+distance = 50
+repeat 4
+[
+  fd distance
+  rt 90
+]

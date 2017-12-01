@@ -1,0 +1,37 @@
+/**
+ * 
+ */
+package slogo.instruction;
+
+
+import slogo.*;
+
+/**
+ * @author Emily
+ *
+ */
+public class Subroutine {
+	private String myName;
+	
+	public Subroutine(String name){
+		myName = name;
+	}
+
+	public Object value(Context c) {
+		String name = this.toString();
+		Object value = c.value(name);
+		return value;
+	}
+	
+	public Object evaluate(Context c) {
+		return value(c);
+	}
+	
+	/**
+	 * @returns the variable's name
+	 */
+	@Override
+	public String toString() {
+		return myName;
+	}
+}

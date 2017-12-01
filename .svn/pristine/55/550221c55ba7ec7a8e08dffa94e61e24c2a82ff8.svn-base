@@ -1,0 +1,29 @@
+package slogo.parser;
+
+import slogo.*;
+import slogo.instruction.*;
+
+/**
+ * Parse a XCOR Statement, which looks like
+ * 
+ * XCOR
+ * 
+ * @author Kevin Havermann
+ * 
+ */
+public class XcorParser implements Parser {
+	public XcorParser() {
+
+	}
+
+	/**
+	 * Parses a Xcor instruction
+	 */
+	@Override
+	public GrammarElement parse(SLogoInterpreter interpreter) {
+
+		interpreter.nextToken(); 
+ 
+		return new Xcor();
+	}
+}

@@ -1,0 +1,28 @@
+package slogo.parser;
+
+import slogo.GrammarElement;
+import slogo.SLogoInterpreter;
+import slogo.instruction.Left;
+
+/**
+ * @author Kevin Havermann
+ *
+ */
+
+
+public class LTParser implements Parser{
+	
+	public LTParser() {
+	}
+
+	@Override
+	public GrammarElement parse(SLogoInterpreter interpreter) {
+		InstructionParser instructionParser = InstructionParser.getInstance();
+		interpreter.nextToken();
+		GrammarElement e = instructionParser.parse(interpreter);
+		return new Left(e);
+		
+	}
+
+
+}

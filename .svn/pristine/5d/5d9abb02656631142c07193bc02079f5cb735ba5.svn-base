@@ -1,0 +1,62 @@
+package slogo.instruction;
+
+import slogo.*;
+import slogo.expression.Variable;
+
+/**
+ * An assignment instruction assigns an expression to a variable, updating the
+ * global state to reflect the assignment.
+ * <p>
+ * Executing the assignment instruction causes the expression to be evaluated
+ * and assigned to the variable, until the assignment instruction executes, the
+ * expression isn't evaluated.
+ * </p>
+ * 
+ * @author Owen Astrachan
+ */
+public class Assignment extends GrammarElement {
+
+	protected Variable myVariable;
+	protected GrammarElement myExpression;
+
+	/**
+	 * Construct an Assignment instruction from a variable and an expression,
+	 * e.g., X = expression.
+	 * 
+	 * @param e
+	 *            expression being assigned
+	 * @param v
+	 *            variable to which the expression is assigned
+	 */
+	public Assignment(Variable v, GrammarElement e) {
+		myVariable = v;
+		myExpression = e;
+	}
+
+	/**
+	 * Evaluate the expression that's part of this instruction and update a
+	 * global map/store to record the assignment of the expression to the
+	 * variable.
+	 * 
+	 * @param c
+	 *            is the Context in which the evaluation takes place
+	 * @return the result of evaluation (which is the expression assigned)
+	 */
+	@Override
+	public Object evaluate(Context c) {
+		Object value = myExpression.evaluate(c);
+		gelementsToValue.put(myVariable, value);
+		return value;
+	}
+
+	/**
+	 * Returns a String for this instruction.
+	 * 
+	 * @return VAR = EXPRESSION
+	 */
+	@Override
+	public String toString() {
+		return myVariable + " = " + myExpression;
+	}
+
+}

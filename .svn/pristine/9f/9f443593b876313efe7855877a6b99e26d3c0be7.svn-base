@@ -1,0 +1,27 @@
+to angle
+[
+  rt 30
+  fd 50
+  lt 105
+  fd 25
+  bk 25
+  rt 105
+  bk 50
+]
+
+tell [ 0 1 2 3 4 5 6 7 8 9 10 11 ]
+st
+pd
+
+turtle = 0
+repeat 12
+[
+  ask turtle
+  [
+    rt product turtle 30
+    setpc turtle
+  ]
+  turtle = sum turtle 1
+]
+
+angle
